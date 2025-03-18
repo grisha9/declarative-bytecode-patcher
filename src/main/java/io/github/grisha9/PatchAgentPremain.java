@@ -4,7 +4,6 @@ import tech.ytsaurus.spyt.patch.SparkPatchClassTransformer;
 import tech.ytsaurus.spyt.patch.annotations.OriginClass;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -60,8 +59,9 @@ public class PatchAgentPremain {
                 return result;
             }
             return Collections.emptyList();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return Collections.emptyList();
         }
     }
 

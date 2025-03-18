@@ -30,7 +30,7 @@ Available on Maven Central:
 <dependency>
     <groupId>io.github.grisha9</groupId>
     <artifactId>declarative-bytecode-patcher</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>
 ```
 
