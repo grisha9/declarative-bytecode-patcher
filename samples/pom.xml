@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.grisha9</groupId>
+    <artifactId>samples</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <declarative-bytecode-patcher.version>0.1</declarative-bytecode-patcher.version>
+    </properties>
+
+    <modules>
+        <module>simple-java-sample/javaagent-simple</module>
+        <module>simple-java-sample/javaagent-simple-app</module>
+
+        <module>spring-print-bean-sample/javaagent-spring</module>
+        <module>spring-print-bean-sample/spring-print-bean</module>
+    </modules>
+</project>

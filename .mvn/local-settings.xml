@@ -1,0 +1,9 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0">
+    <servers>
+        <server>
+            <id>central</id>
+            <username>${deploy.name}</username>
+            <password>${deploy.password}</password>
+        </server>
+    </servers>
+</settings>
