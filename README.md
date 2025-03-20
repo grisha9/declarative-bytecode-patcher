@@ -106,6 +106,8 @@ This library uses Javassist to manipulate bytecode at runtime through a Java age
 - `@OriginClass` - Specifies the fully qualified name of the class to be modified
 - `@DecoratedMethod` - Marks a method that should replace or enhance an existing method
 - `@AddMethod` - Designates a new method to be added to the target class
+- `@Subclass` - create subclass for OriginClass
+- `@AddInterfaces` - add interfaces for OriginClass
 
 ## Credits
 
