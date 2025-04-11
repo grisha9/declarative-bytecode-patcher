@@ -13,10 +13,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
 public class PatchAgentPremain {
+    private static final String TARGET_AGENT_NAME = "patcher.filter.agent.name";
+
     public static void premain(String args, Instrumentation inst) {
         List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
-
-        List<String> patchedJarPaths = getAgentJarPaths(inputArguments);
+        String agentTargetName = getAgentTargetName();
+        List<String> patchedJarPaths = getAgentJarPaths(inputArguments, agentTargetName);
         if (patchedJarPaths.isEmpty()) {
             throw new RuntimeException("No agent jars found");
         }
@@ -33,11 +35,35 @@ public class PatchAgentPremain {
         inst.addTransformer(new SparkPatchClassTransformer(classMappings));
     }
 
-    static List<String> getAgentJarPaths(List<String> inputArguments) {
-        return inputArguments.stream()
+    private static String getAgentTargetName() {
+        String agentName = System.getProperty(TARGET_AGENT_NAME);
+        if (agentName != null) return agentName;
+        agentName = System.getenv(TARGET_AGENT_NAME);
+        if (agentName != null) return agentName;
+        return "";
+    }
+
+    static List<String> getAgentJarPaths(List<String> inputArguments, String agentTargetName) {
+        List<String> agentPaths = inputArguments.stream()
                 .filter(arg -> arg.startsWith("-javaagent"))
                 .flatMap(arg -> getJarPaths(arg.substring(arg.indexOf(":") + 1)))
+                .map(path -> cleanUpPath(path))
                 .collect(Collectors.toList());
+        List<String> filteredAgentPaths = agentPaths.stream()
+                .filter(path -> agentTargetName.isEmpty() || path.contains(agentTargetName))
+                .collect(Collectors.toList());
+        return filteredAgentPaths.isEmpty() ? agentPaths : filteredAgentPaths;
+    }
+
+    private static String cleanUpPath(String path) {
+        if (path.contains(".jar") && !path.endsWith(".jar")) {
+            String jarSuffix = ".jar";
+            int indexOf = path.indexOf(jarSuffix);
+            if (indexOf > 0) {
+                return path.substring(0, indexOf + jarSuffix.length());
+            }
+        }
+        return path;
     }
 
     static Stream<String> getJarPaths(String paths) {
