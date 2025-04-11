@@ -12,7 +12,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <declarative-bytecode-patcher.version>0.1</declarative-bytecode-patcher.version>
+        <declarative-bytecode-patcher.version>0.2</declarative-bytecode-patcher.version>
     </properties>
 
     <modules>
