@@ -155,6 +155,11 @@ public class SparkPatchClassTransformer implements ClassFileTransformer {
                 ClassPool.getDefault().makeClass(baseCf).toClass(loader, null);
             }
 
+            if (annotation instanceof AddClass) {
+                ClassFile baseCf = loadClassFile(baseClassBytes);
+                ClassPool.getDefault().makeClass(baseCf).toClass(loader, null);
+            }
+
             if (annotation instanceof AddInterfaces) {
                 ClassFile baseCf = loadClassFile(baseClassBytes);
                 for (Class<?> i : ((AddInterfaces) annotation).value()) {
