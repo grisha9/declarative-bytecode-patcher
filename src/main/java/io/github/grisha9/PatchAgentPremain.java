@@ -16,23 +16,41 @@ public class PatchAgentPremain {
     private static final String TARGET_AGENT_NAME = "patcher.filter.agent.name";
 
     public static void premain(String args, Instrumentation inst) {
-        List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
-        String agentTargetName = getAgentTargetName();
-        List<String> patchedJarPaths = getAgentJarPaths(inputArguments, agentTargetName);
-        if (patchedJarPaths.isEmpty()) {
-            throw new RuntimeException("No agent jars found");
-        }
+        try {
+            List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
+            String agentTargetName = getAgentTargetName();
+            List<String> patchedJarPaths = getAgentJarPaths(inputArguments, agentTargetName);
+            if (patchedJarPaths.isEmpty()) {
+                System.out.println("No agent jars found");
+                return;
+            }
 
-        Map<String, String> classMappings = patchedJarPaths.stream()
-                .flatMap(it -> getPotentialPatchClasses(it).stream())
-                .map(PatchAgentPremain::toOriginClassName)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(s -> s.patchClass, s -> s.originClass));
-        if (classMappings.isEmpty()) {
-            throw new RuntimeException("No classes with patch found");
-        }
+            Map<String, String> classMappings = new HashMap<>();
+            for (String jarPath : patchedJarPaths) {
+                try {
+                    List<String> potentialPatchClasses = getPotentialPatchClasses(jarPath);
+                    for (String potentialPatchClass : potentialPatchClasses) {
+                        PathClassInfo classInfo = PatchAgentPremain.toOriginClassName(potentialPatchClass);
+                        if (classInfo != null) {
+                            classMappings.put(classInfo.patchClass, classInfo.originClass);
+                        }
+                    }
+                } catch (Throwable t) {
+                    System.out.println("processing path class error: " + jarPath);
+                    System.out.println(t.getMessage());
+                    t.printStackTrace();
+                }
+            }
+            if (classMappings.isEmpty()) {
+                System.out.println("No classes with patch found");
+                return;
+            }
 
-        inst.addTransformer(new SparkPatchClassTransformer(classMappings));
+            inst.addTransformer(new SparkPatchClassTransformer(classMappings));
+        } catch (Throwable t) {
+            System.out.println("javaagent init error: " + t.getMessage());
+            t.printStackTrace();
+        }
     }
 
     private static String getAgentTargetName() {
@@ -99,18 +117,30 @@ public class PatchAgentPremain {
     static PathClassInfo toOriginClassName(String fileName) {
         try {
             String patchClassName = fileName.substring(0, fileName.length() - 6);
-            Class<?> patchClass = Class.forName(patchClassName.replace(File.separatorChar, '.'));
+            char delimiter = getDelimiter(patchClassName);
+            String finalClassName = patchClassName.replace(delimiter, '.');
+            Class<?> patchClass = Class.forName(finalClassName);
             OriginClass[] originAnnotations = patchClass.getAnnotationsByType(OriginClass.class);
             if (originAnnotations.length == 0) {
                 return null;
             }
             String originClass = originAnnotations[0].value();
             if (originClass != null) {
-                return new PathClassInfo(patchClassName, originClass.replace('.', File.separatorChar));
+                return new PathClassInfo(patchClassName, originClass.replace('.', delimiter));
             }
             return null;
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static char getDelimiter(String patchClassName) {
+        if (patchClassName.contains("/")) {
+            return '/';
+        } else {
+            return '\\';
         }
     }
 
