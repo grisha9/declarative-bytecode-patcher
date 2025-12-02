@@ -71,10 +71,10 @@ public class SparkPatchClassTransformer implements ClassFileTransformer {
                 .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 
-    static String getOriginClass(CtClass ctClass) throws ClassNotFoundException {
-        OriginClass originClassAnnotaion = (OriginClass) ctClass.getAnnotation(OriginClass.class);
-        if (originClassAnnotaion != null) {
-            String originClass = originClassAnnotaion.value();
+    public static String getOriginClass(CtClass ctClass) throws ClassNotFoundException {
+        OriginClass originClassAnnotation = (OriginClass) ctClass.getAnnotation(OriginClass.class);
+        if (originClassAnnotation != null) {
+            String originClass = originClassAnnotation.value();
             if (originClass.endsWith("$") && !ctClass.getName().endsWith("$")) {
                 return null;
             }
@@ -92,7 +92,7 @@ public class SparkPatchClassTransformer implements ClassFileTransformer {
         }
     }
 
-    static Optional<ClassFile> loadClassFile(String classFile) throws IOException {
+    public static Optional<ClassFile> loadClassFile(String classFile) throws IOException {
         try (InputStream inputStream = SparkPatchClassTransformer.class.getClassLoader().getResourceAsStream(classFile)) {
             if (inputStream == null) return Optional.empty();
             byte[] byteArray = toByteArray(inputStream);
