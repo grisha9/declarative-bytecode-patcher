@@ -1,9 +1,12 @@
 package io.github.grisha9;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.bytecode.ClassFile;
 import tech.ytsaurus.spyt.patch.SparkPatchClassTransformer;
-import tech.ytsaurus.spyt.patch.annotations.OriginClass;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.util.*;
@@ -117,19 +120,17 @@ public class PatchAgentPremain {
     static PathClassInfo toOriginClassName(String fileName) {
         try {
             String patchClassName = fileName.substring(0, fileName.length() - 6);
-            char delimiter = getDelimiter(patchClassName);
-            String finalClassName = patchClassName.replace(delimiter, '.');
-            Class<?> patchClass = Class.forName(finalClassName);
-            OriginClass[] originAnnotations = patchClass.getAnnotationsByType(OriginClass.class);
-            if (originAnnotations.length == 0) {
-                return null;
-            }
-            String originClass = originAnnotations[0].value();
+            ClassFile classFile = SparkPatchClassTransformer.loadClassFile(fileName).orElse(null);
+            if (classFile == null) return null;
+            CtClass ctClass = ClassPool.getDefault().makeClass(classFile);
+            String originClass = SparkPatchClassTransformer.getOriginClass(ctClass);
+
             if (originClass != null) {
+                char delimiter = getDelimiter(patchClassName);
                 return new PathClassInfo(patchClassName, originClass.replace('.', delimiter));
             }
             return null;
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | IOException e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
             return null;
