@@ -6,7 +6,7 @@
 
     <groupId>io.github.grisha9</groupId>
     <artifactId>declarative-bytecode-patcher</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.7-SNAPSHOT</version>
     <name>declarative-bytecode-patcher</name>
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
